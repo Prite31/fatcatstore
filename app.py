@@ -129,12 +129,9 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        email = request.form["email"]
         if username in users:
             return render_template("register.html", error="⚠️ มีบัญชีชื่อนี้อยู่แล้ว กรุณาใช้ชื่ออื่นหรือเข้าสู่ระบบ")
-        if any(u.get("email") == email for u in users.values()):
-            return render_template("register.html", error="⚠️ อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบ")
-        users[username] = {"password": password, "email": email, "credit": 0, "role": "user", "total_topup": 0}
+        users[username] = {"password": password, "credit": 0, "role": "user", "total_topup": 0}
         session["user"] = username
         update_online(username)
         return redirect("/login-success")
