@@ -6,6 +6,7 @@ from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = "fatcatstore2026"
+app.permanent_session_lifetime = 7200  # 7200 วินาที = 2 ชั่วโมง
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
@@ -99,6 +100,7 @@ def login():
             "response": recaptcha
         }).json()
         if username in users and users[username].get("password") and users[username]["password"] == password:
+            session.permanent = True
             session["user"] = username
             update_online(username)
             return redirect("/login-success")
@@ -126,6 +128,7 @@ def auth_google_callback():
             "display_name": name,
             "google": True
         }
+    session.permanent = True
     session["user"] = username
     update_online(username)
     return redirect("/login-success")
@@ -147,6 +150,7 @@ def register():
         if username in users:
             return render_template("register.html", error="⚠️ มีบัญชีชื่อนี้อยู่แล้ว กรุณาใช้ชื่ออื่นหรือเข้าสู่ระบบ")
         users[username] = {"password": password, "credit": 0, "role": "user", "total_topup": 0}
+        session.permanent = True
         session["user"] = username
         update_online(username)
         return redirect("/login-success")
