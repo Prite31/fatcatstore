@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <title>ประวัติการเติมเงิน - FAT CAT STORE</title>
+    <title>ประวัติ - FAT CAT STORE</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -20,18 +20,68 @@
         <!-- แถบเมนู -->
         <div class="history-tabs">
             <a href="/profile" class="tab-item">👤 โปรไฟล์</a>
-            <a href="/history" class="tab-item active">💰 ประวัติการเติมเงิน</a>
+            <a href="/history" class="tab-item {% if tab != 'orders' %}active{% endif %}">💰 ประวัติการเติมเงิน</a>
+            <a href="/history?tab=orders" class="tab-item {% if tab == 'orders' %}active{% endif %}">🛒 ประวัติการสั่งซื้อ</a>
             <a href="/topup" class="tab-item">➕ เติมเงิน</a>
             <a href="/logout" class="tab-item tab-logout">↩ ออกจากระบบ</a>
         </div>
 
-        <!-- หัวข้อ -->
+        {% if tab == 'orders' %}
+        <!-- ประวัติการสั่งซื้อ -->
+        <div class="history-header">
+            <p class="history-label">Purchase History</p>
+            <h2>ประวัติการสั่งซื้อ</h2>
+        </div>
+
+        <div class="history-table-wrap">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>User / ผู้ใช้</th>
+                        <th>สินค้า</th>
+                        <th>ราคา</th>
+                        <th>สถานะ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if purchases %}
+                        {% for p in purchases %}
+                        <tr>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="user-avatar">{{ username[0]|upper }}</div>
+                                    {{ username }}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="service-cell">
+                                    <img src="/static/roblox.png" style="width:28px;height:28px;object-fit:contain;">
+                                    <div>
+                                        <p>{{ p.product }}</p>
+                                        <small>Robux ID-Pass</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><strong>฿{{ p.price }}</strong></td>
+                            <td><span class="status-success">✅ สำเร็จ</span></td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-row">ยังไม่มีประวัติการสั่งซื้อ</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <!-- ประวัติการเติมเงิน -->
         <div class="history-header">
             <p class="history-label">Topup Transactions History</p>
             <h2>ประวัติการเติมเงิน</h2>
         </div>
 
-        <!-- ตาราง -->
         <div class="history-table-wrap">
             <table class="history-table">
                 <thead>
@@ -77,6 +127,7 @@
                 </tbody>
             </table>
         </div>
+        {% endif %}
 
     </div>
 </body>
