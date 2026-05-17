@@ -226,6 +226,7 @@ def topup_truemoney():
             data = response.json()
             status = data.get("status", {})
             code = status.get("code", "")
+            print("TRUEMONEY RESPONSE:", data)
 
             if code == "SUCCESS":
                 amount = int(data["data"]["voucher"]["redeemed_amount_baht"])
