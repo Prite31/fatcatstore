@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ซื้อสินค้า - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-right">
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/profile" class="btn-register">👤 โปรไฟล์</a>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+        </div>
+    </div>
+
+    <div class="buy-box">
+        {% if success %}
+        <div class="buy-success">
+            <div class="buy-success-icon">✅</div>
+            <h3>ซื้อสำเร็จแล้ว!</h3>
+            <p>คุณได้รับ <strong style="color:var(--orange)">{{ product.name }}</strong> เรียบร้อย</p>
+            <p style="color:var(--text-muted); font-size:13px">เครดิตคงเหลือ: <strong style="color:var(--orange)">฿{{ credit }}</strong></p>
+            <div class="buy-actions" style="margin-top:1.5rem">
+                <a href="/" class="btn-home">🏠 หน้าแรก</a>
+                <a href="/history" class="btn-profile">📋 ประวัติ</a>
+            </div>
+        </div>
+
+        {% elif error %}
+        <h2>⚠️ เกิดข้อผิดพลาด</h2>
+        <p style="color:#ff6b6b; margin-bottom:1.5rem">{{ error }}</p>
+        <div style="display:flex; gap:12px">
+            <a href="/shop" class="btn-home">← กลับ</a>
+            <a href="/topup" class="btn-profile">💰 เติมเครดิต</a>
+        </div>
+
+        {% else %}
+        <h2>🛒 ยืนยันการซื้อ</h2>
+
+        <div class="buy-product-info">
+            <div class="buy-product-icon">{{ product.icon }}</div>
+            <div>
+                <p class="buy-product-name">{{ product.name }}</p>
+                <p class="buy-product-desc">{{ product.description }}</p>
+                <p class="buy-product-price">฿{{ product.price }}</p>
+            </div>
+        </div>
+
+        <div class="buy-summary">
+            <div class="buy-row">
+                <span>เครดิตของคุณ</span>
+                <strong>฿{{ credit }}</strong>
+            </div>
+            <div class="buy-row">
+                <span>ราคาสินค้า</span>
+                <strong>฿{{ product.price }}</strong>
+            </div>
+            <div class="buy-row total">
+                <span>เครดิตหลังซื้อ</span>
+                <strong>฿{{ credit - product.price }}</strong>
+            </div>
+        </div>
+
+        {% if credit < product.price %}
+        <p style="color:#ff6b6b; text-align:center; margin-bottom:1rem; font-size:14px">⚠️ เครดิตไม่เพียงพอ</p>
+        <a href="/topup" class="btn-confirm" style="text-align:center; display:block; text-decoration:none">💰 เติมเครดิต</a>
+        {% else %}
+        <form method="POST">
+            <button type="submit" class="btn-confirm">✅ ยืนยันการซื้อ</button>
+        </form>
+        {% endif %}
+
+        <div style="text-align:center; margin-top:1rem">
+            <a href="/shop" style="color:var(--text-muted); font-size:13px">← กลับไปเลือกสินค้า</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

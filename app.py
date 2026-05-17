@@ -11,8 +11,40 @@ users = {
 
 pending_slips = []
 
+# ===== ระบบสินค้า =====
+products = [
+    {
+        "id": 1,
+        "name": "Robux 400",
+        "description": "Roblox 400 Robux เข้าเกมทันที",
+        "price": 99,
+        "stock": 10,
+        "icon": "💎",
+        "recommended": True
+    },
+    {
+        "id": 2,
+        "name": "Robux 800",
+        "description": "Roblox 800 Robux ราคาคุ้มค่า",
+        "price": 189,
+        "stock": 5,
+        "icon": "💎",
+        "recommended": True
+    },
+    {
+        "id": 3,
+        "name": "Robux 1700",
+        "description": "Roblox 1700 Robux แพ็กใหญ่ประหยัด",
+        "price": 379,
+        "stock": 0,
+        "icon": "💎",
+        "recommended": False
+    },
+]
+
+purchase_history = []
+
 def get_user():
-    """คืนค่า user dict ถ้า session valid, ไม่งั้น return None"""
     if "user" not in session:
         return None
     if session["user"] not in users:
@@ -20,12 +52,16 @@ def get_user():
         return None
     return users[session["user"]]
 
+def get_product(product_id):
+    return next((p for p in products if p["id"] == product_id), None)
+
 @app.route("/")
 def home():
     user = get_user()
     return render_template("index.html",
         user=session.get("user"),
-        credit=user["credit"] if user else 0)
+        credit=user["credit"] if user else 0,
+        products=products)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -124,10 +160,80 @@ def history():
     if not user:
         return redirect("/login")
     user_slips = [s for s in pending_slips if s["user"] == session["user"]]
+    user_purchases = [p for p in purchase_history if p["user"] == session["user"]]
     return render_template("history.html",
         username=session["user"],
         credit=user["credit"],
-        slips=user_slips)
+        slips=user_slips,
+        purchases=user_purchases)
+
+# ===== ระบบสินค้า =====
+@app.route("/shop")
+def shop():
+    user = get_user()
+    return render_template("shop.html",
+        user=session.get("user"),
+        credit=user["credit"] if user else 0,
+        products=products)
+
+@app.route("/buy/<int:product_id>", methods=["GET", "POST"])
+def buy(product_id):
+    user = get_user()
+    if not user:
+        return redirect("/login")
+
+    product = get_product(product_id)
+    if not product:
+        return redirect("/shop")
+
+    if request.method == "POST":
+        if product["stock"] <= 0:
+            return render_template("buy.html",
+                product=product,
+                credit=user["credit"],
+                error="สินค้าหมดแล้ว")
+
+        if user["credit"] < product["price"]:
+            return render_template("buy.html",
+                product=product,
+                credit=user["credit"],
+                error=f"เครดิตไม่พอ (ต้องการ ฿{product['price']} มีอยู่ ฿{user['credit']})")
+
+        # หักเครดิต + ลดสต็อก
+        users[session["user"]]["credit"] -= product["price"]
+        product["stock"] -= 1
+
+        purchase_history.append({
+            "user": session["user"],
+            "product": product["name"],
+            "price": product["price"],
+            "product_id": product_id
+        })
+
+        return render_template("buy.html",
+            product=product,
+            credit=users[session["user"]]["credit"],
+            success=True)
+
+    return render_template("buy.html",
+        product=product,
+        credit=user["credit"])
+
+# ===== Admin: เติมเครดิตให้ user =====
+@app.route("/admin/topup", methods=["POST"])
+def admin_topup():
+    user = get_user()
+    if not user or user.get("role") != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    target = request.json.get("username")
+    amount = request.json.get("amount", 0)
+
+    if target not in users:
+        return jsonify({"error": "ไม่พบผู้ใช้"}), 404
+
+    users[target]["credit"] += int(amount)
+    return jsonify({"success": True, "credit": users[target]["credit"]})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=False)
