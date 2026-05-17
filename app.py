@@ -27,7 +27,6 @@ users = {
 pending_slips = []
 purchase_history = []
 
-# ===== Online Tracking =====
 online_users = {}
 ONLINE_TIMEOUT = 300
 
@@ -38,7 +37,12 @@ def get_online_count():
     now = time.time()
     return sum(1 for t in online_users.values() if now - t < ONLINE_TIMEOUT)
 
-# ===== สินค้า =====
+def get_display(username):
+    """คืนชื่อที่จะแสดงใน navbar — ถ้า Google user ใช้ display_name ถ้าปกติใช้ username"""
+    if username in users:
+        return users[username].get("display_name", username)
+    return username
+
 products = [
     {"id": 1, "name": "Robux 400", "description": "Roblox 400 Robux เข้าเกมทันที", "price": 99, "stock": 10, "icon": "💎", "recommended": True},
     {"id": 2, "name": "Robux 800", "description": "Roblox 800 Robux ราคาคุ้มค่า", "price": 189, "stock": 5, "icon": "💎", "recommended": True},
@@ -60,8 +64,9 @@ def get_product(product_id):
 @app.route("/")
 def home():
     user = get_user()
+    username = session.get("user")
     return render_template("index.html",
-        user=session.get("user"),
+        user=get_display(username) if username else None,
         credit=user["credit"] if user else 0,
         products=products,
         total_users=len(users),
@@ -88,7 +93,6 @@ def login():
 @app.route("/auth/google")
 def auth_google():
     redirect_uri = url_for("auth_google_callback", _external=True)
-    print("REDIRECT URI:", redirect_uri)
     return google.authorize_redirect(redirect_uri)
 
 @app.route("/auth/google/callback")
@@ -116,9 +120,8 @@ def login_success():
     user = get_user()
     if not user:
         return redirect("/login")
-    display = user.get("display_name", session["user"])
     return render_template("login_success.html",
-        username=display,
+        username=get_display(session["user"]),
         credit=user["credit"])
 
 @app.route("/register", methods=["GET", "POST"])
@@ -146,9 +149,8 @@ def profile():
     user = get_user()
     if not user:
         return redirect("/login")
-    display = user.get("display_name", session["user"])
     return render_template("profile.html",
-        username=display,
+        username=get_display(session["user"]),
         credit=user["credit"])
 
 @app.route("/topup")
@@ -190,7 +192,7 @@ def history():
     user_slips = [s for s in pending_slips if s["user"] == session["user"]]
     user_purchases = [p for p in purchase_history if p["user"] == session["user"]]
     return render_template("history.html",
-        username=session["user"],
+        username=get_display(session["user"]),
         credit=user["credit"],
         slips=user_slips,
         purchases=user_purchases)
@@ -198,8 +200,9 @@ def history():
 @app.route("/shop")
 def shop():
     user = get_user()
+    username = session.get("user")
     return render_template("shop.html",
-        user=session.get("user"),
+        user=get_display(username) if username else None,
         credit=user["credit"] if user else 0,
         products=products)
 
