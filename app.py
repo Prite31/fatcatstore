@@ -198,20 +198,63 @@ def topup_truemoney():
     if not user:
         return redirect("/login")
     if request.method == "POST":
-        link = request.form.get("truemoney_link", "")
+        link = request.form.get("truemoney_link", "").strip()
         if not link.startswith("https://gift.truemoney.com"):
             return render_template("truemoney.html",
                 credit=user["credit"],
                 error="❌ ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์จาก TrueMoney Wallet เท่านั้น")
-        pending_slips.append({
-            "user": session["user"],
-            "amount": 0,
-            "type": "truemoney",
-            "link": link
-        })
-        return render_template("truemoney.html",
-            credit=user["credit"],
-            success=True)
+
+        # ดึง voucher code จากลิงก์
+        try:
+            voucher = link.split("?v=")[-1].strip()
+            phone = os.environ.get("TRUEMONEY_PHONE", "")
+
+            # เรียก TrueMoney API
+            api_url = f"https://gift.truemoney.com/campaign/vouchers/{voucher}/redeem"
+            response = req.post(api_url, json={
+                "mobile": phone,
+                "voucher_hash": voucher
+            }, headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0"
+            }, timeout=10)
+
+            data = response.json()
+            status = data.get("status", {})
+            code = status.get("code", "")
+
+            if code == "SUCCESS":
+                amount = int(data["data"]["voucher"]["redeemed_amount_baht"])
+                users[session["user"]]["credit"] += amount
+                users[session["user"]]["total_topup"] += amount
+                pending_slips.append({
+                    "user": session["user"],
+                    "amount": amount,
+                    "type": "truemoney",
+                    "link": link,
+                    "status": "success"
+                })
+                return render_template("truemoney.html",
+                    credit=users[session["user"]]["credit"],
+                    success=True,
+                    amount=amount)
+            elif code == "VOUCHER_OUT_OF_STOCK":
+                error = "❌ อั่งเปาถูกใช้ไปแล้ว"
+            elif code == "VOUCHER_NOT_FOUND":
+                error = "❌ ไม่พบอั่งเปานี้ในระบบ"
+            elif code == "VOUCHER_EXPIRED":
+                error = "❌ อั่งเปาหมดอายุแล้ว"
+            else:
+                error = f"❌ ไม่สำเร็จ: {code}"
+
+            return render_template("truemoney.html",
+                credit=user["credit"], error=error)
+
+        except Exception as e:
+            return render_template("truemoney.html",
+                credit=user["credit"],
+                error="❌ เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง")
+
     return render_template("truemoney.html", credit=user["credit"])
 
 @app.route("/credit")

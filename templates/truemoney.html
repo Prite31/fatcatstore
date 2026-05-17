@@ -18,11 +18,12 @@
         <h2>🧧 เติมเครดิตด้วยอั่งเปา</h2>
 
         {% if success %}
-        <div class="slip-success">
-            <p>✅ ส่งลิงก์อั่งเปาสำเร็จ!</p>
-            <p>รอ Admin ตรวจสอบและเติมเครดิตภายใน 5 นาที</p>
-            <a href="/">กลับหน้าแรก</a>
-        </div>
+<div class="slip-success">
+    <p>✅ เติมเครดิตสำเร็จ!</p>
+    <p>ได้รับเครดิต <strong style="color:var(--orange)">฿{{ amount }}</strong> เข้าบัญชีแล้ว</p>
+    <p style="font-size:13px;color:#8b8fad">เครดิตคงเหลือ: ฿{{ credit }}</p>
+    <a href="/">กลับหน้าแรก</a>
+</div>
         {% else %}
 
         {% if error %}
