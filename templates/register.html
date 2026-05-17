@@ -17,7 +17,6 @@
         <p class="error-msg">{{ error }}</p>
         {% endif %}
 
-        <!-- ปุ่ม Google -->
         <a href="/auth/google" class="btn-google">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20">
             สมัครด้วย Google
@@ -28,6 +27,8 @@
         <form method="POST">
             <label>ชื่อผู้ใช้</label>
             <input type="text" name="username" placeholder="ตั้งชื่อผู้ใช้" required>
+            <label>อีเมล</label>
+            <input type="email" name="email" placeholder="กรอกอีเมล" required>
             <label>รหัสผ่าน</label>
             <div class="input-wrap">
                 <input type="password" name="password" id="pwd" placeholder="ตั้งรหัสผ่าน" required>
@@ -39,7 +40,6 @@
         <p class="auth-link">มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a></p>
     </div>
 </div>
-
 <script>
 function togglePwd() {
     const p = document.getElementById("pwd");
