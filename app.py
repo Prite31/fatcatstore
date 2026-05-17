@@ -11,10 +11,21 @@ users = {
 
 pending_slips = []
 
+def get_user():
+    """คืนค่า user dict ถ้า session valid, ไม่งั้น return None"""
+    if "user" not in session:
+        return None
+    if session["user"] not in users:
+        session.pop("user", None)
+        return None
+    return users[session["user"]]
+
 @app.route("/")
 def home():
-    return render_template("index.html", user=session.get("user"),
-        credit=users[session["user"]]["credit"] if "user" in session and session["user"] in users else 0)
+    user = get_user()
+    return render_template("index.html",
+        user=session.get("user"),
+        credit=user["credit"] if user else 0)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -28,8 +39,8 @@ def login():
             "response": recaptcha
         }).json()
 
-       # if not verify.get("success"):
-         #   return render_template("login.html", error="กรุณายืนยันว่าไม่ใช่บอทก่อน")
+        # if not verify.get("success"):
+        #     return render_template("login.html", error="กรุณายืนยันว่าไม่ใช่บอทก่อน")
 
         if username in users and users[username]["password"] == password:
             session["user"] = username
@@ -39,11 +50,12 @@ def login():
 
 @app.route("/login-success")
 def login_success():
-    if "user" not in session:
+    user = get_user()
+    if not user:
         return redirect("/login")
     return render_template("login_success.html",
         username=session["user"],
-        credit=users[session["user"]]["credit"])
+        credit=user["credit"])
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -64,22 +76,25 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    if "user" not in session:
+    user = get_user()
+    if not user:
         return redirect("/login")
     return render_template("profile.html",
         username=session["user"],
-        credit=users[session["user"]]["credit"])
+        credit=user["credit"])
 
 @app.route("/topup")
 def topup():
-    if "user" not in session:
+    user = get_user()
+    if not user:
         return redirect("/login")
     return render_template("topup.html",
-        credit=users[session["user"]]["credit"])
+        credit=user["credit"])
 
 @app.route("/payment", methods=["GET", "POST"])
 def payment():
-    if "user" not in session:
+    user = get_user()
+    if not user:
         return redirect("/login")
     if request.method == "POST":
         amount = request.form.get("amount", 0)
@@ -92,24 +107,26 @@ def payment():
             })
             return render_template("payment.html",
                 success=True, amount=amount,
-                credit=users[session["user"]]["credit"])
+                credit=user["credit"])
     return render_template("payment.html",
-        credit=users[session["user"]]["credit"])
+        credit=user["credit"])
 
 @app.route("/credit")
 def credit():
-    if "user" not in session:
+    user = get_user()
+    if not user:
         return jsonify({"credit": 0})
-    return jsonify({"credit": users[session["user"]]["credit"]})
+    return jsonify({"credit": user["credit"]})
 
 @app.route("/history")
 def history():
-    if "user" not in session:
+    user = get_user()
+    if not user:
         return redirect("/login")
     user_slips = [s for s in pending_slips if s["user"] == session["user"]]
     return render_template("history.html",
         username=session["user"],
-        credit=users[session["user"]]["credit"],
+        credit=user["credit"],
         slips=user_slips)
 
 if __name__ == "__main__":
