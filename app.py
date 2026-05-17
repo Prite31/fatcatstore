@@ -1,14 +1,14 @@
 from flask import Flask, render_template, request, redirect, session, jsonify, url_for
 import requests as req
 import time
+import os
 from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = "fatcatstore2026"
 
 # ===== Google OAuth =====
-import os
-
+oauth = OAuth(app)
 google = oauth.register(
     name="google",
     client_id=os.environ.get("GOOGLE_CLIENT_ID"),
@@ -65,7 +65,6 @@ def home():
         online_count=get_online_count(),
         total_topup=user["total_topup"] if user else 0)
 
-# ===== Login =====
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -83,7 +82,6 @@ def login():
         return render_template("login.html", error="ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
     return render_template("login.html")
 
-# ===== Google Login =====
 @app.route("/auth/google")
 def auth_google():
     redirect_uri = url_for("auth_google_callback", _external=True)
@@ -95,21 +93,16 @@ def auth_google_callback():
     userinfo = token["userinfo"]
     email = userinfo["email"]
     name = userinfo.get("name", email.split("@")[0])
-
-    # ใช้ email เป็น username
     username = email
-
-    # ถ้ายังไม่มีในระบบ → สร้างให้อัตโนมัติ
     if username not in users:
         users[username] = {
-            "password": None,  # Google user ไม่มี password
+            "password": None,
             "credit": 0,
             "role": "user",
             "total_topup": 0,
             "display_name": name,
             "google": True
         }
-
     session["user"] = username
     update_online(username)
     return redirect("/login-success")
@@ -119,13 +112,11 @@ def login_success():
     user = get_user()
     if not user:
         return redirect("/login")
-    # แสดงชื่อสวยงาม ถ้า Google user ใช้ display_name
     display = user.get("display_name", session["user"])
     return render_template("login_success.html",
         username=display,
         credit=user["credit"])
 
-# ===== Register =====
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
