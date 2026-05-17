@@ -192,6 +192,28 @@ def payment():
             return render_template("payment.html", success=True, amount=amount, credit=user["credit"])
     return render_template("payment.html", credit=user["credit"])
 
+@app.route("/topup/truemoney", methods=["GET", "POST"])
+def topup_truemoney():
+    user = get_user()
+    if not user:
+        return redirect("/login")
+    if request.method == "POST":
+        link = request.form.get("truemoney_link", "")
+        if not link.startswith("https://gift.truemoney.com"):
+            return render_template("truemoney.html",
+                credit=user["credit"],
+                error="❌ ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์จาก TrueMoney Wallet เท่านั้น")
+        pending_slips.append({
+            "user": session["user"],
+            "amount": 0,
+            "type": "truemoney",
+            "link": link
+        })
+        return render_template("truemoney.html",
+            credit=user["credit"],
+            success=True)
+    return render_template("truemoney.html", credit=user["credit"])
+
 @app.route("/credit")
 def credit():
     user = get_user()
