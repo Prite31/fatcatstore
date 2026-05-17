@@ -6,21 +6,45 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="navbar">
-        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
-    </div>
-
-    <div class="auth-box">
+<div class="login-page">
+    <div class="login-overlay"></div>
+    <div class="login-card">
+        <div class="login-logo">🐱</div>
         <h2>สมัครสมาชิก</h2>
+        <p class="login-sub">สร้างบัญชีใหม่กับ FAT CAT STORE</p>
+
         {% if error %}
-            <p class="error-msg">{{ error }}</p>
+        <p class="error-msg">{{ error }}</p>
         {% endif %}
+
+        <!-- ปุ่ม Google -->
+        <a href="/auth/google" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20">
+            สมัครด้วย Google
+        </a>
+
+        <div class="divider"><span>หรือสมัครด้วยอีเมล</span></div>
+
         <form method="POST">
-            <input type="text" name="username" placeholder="ชื่อผู้ใช้" required>
-            <input type="password" name="password" placeholder="รหัสผ่าน" required>
-            <button type="submit">สมัครสมาชิก</button>
+            <label>ชื่อผู้ใช้</label>
+            <input type="text" name="username" placeholder="ตั้งชื่อผู้ใช้" required>
+            <label>รหัสผ่าน</label>
+            <div class="input-wrap">
+                <input type="password" name="password" id="pwd" placeholder="ตั้งรหัสผ่าน" required>
+                <span class="eye-btn" onclick="togglePwd()">👁️</span>
+            </div>
+            <button type="submit" class="btn-submit">สมัครสมาชิก</button>
         </form>
+
         <p class="auth-link">มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a></p>
     </div>
+</div>
+
+<script>
+function togglePwd() {
+    const p = document.getElementById("pwd");
+    p.type = p.type === "password" ? "text" : "password";
+}
+</script>
 </body>
 </html>

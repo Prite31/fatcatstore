@@ -1,9 +1,21 @@
-from flask import Flask, render_template, request, redirect, session, jsonify
+from flask import Flask, render_template, request, redirect, session, jsonify, url_for
 import requests as req
 import time
+from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = "fatcatstore2026"
+
+# ===== Google OAuth =====
+import os
+
+google = oauth.register(
+    name="google",
+    client_id=os.environ.get("GOOGLE_CLIENT_ID"),
+    client_secret=os.environ.get("GOOGLE_CLIENT_SECRET"),
+    server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+    client_kwargs={"scope": "openid email profile"},
+)
 
 users = {
     "admin": {"password": "1234", "credit": 0, "role": "admin", "total_topup": 0}
@@ -12,9 +24,9 @@ users = {
 pending_slips = []
 purchase_history = []
 
-# ===== ระบบ Online Tracking =====
+# ===== Online Tracking =====
 online_users = {}
-ONLINE_TIMEOUT = 300  # ถ้าไม่ขยับ 5 นาที = offline
+ONLINE_TIMEOUT = 300
 
 def update_online(username):
     online_users[username] = time.time()
@@ -23,7 +35,7 @@ def get_online_count():
     now = time.time()
     return sum(1 for t in online_users.values() if now - t < ONLINE_TIMEOUT)
 
-# ===== ระบบสินค้า =====
+# ===== สินค้า =====
 products = [
     {"id": 1, "name": "Robux 400", "description": "Roblox 400 Robux เข้าเกมทันที", "price": 99, "stock": 10, "icon": "💎", "recommended": True},
     {"id": 2, "name": "Robux 800", "description": "Roblox 800 Robux ราคาคุ้มค่า", "price": 189, "stock": 5, "icon": "💎", "recommended": True},
@@ -53,6 +65,7 @@ def home():
         online_count=get_online_count(),
         total_topup=user["total_topup"] if user else 0)
 
+# ===== Login =====
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -63,22 +76,56 @@ def login():
             "secret": "6Le5B-4sAAAAKMO6d5Lhi0U3QQf7Z0cL4g7JgoD",
             "response": recaptcha
         }).json()
-        if username in users and users[username]["password"] == password:
+        if username in users and users[username].get("password") and users[username]["password"] == password:
             session["user"] = username
             update_online(username)
             return redirect("/login-success")
         return render_template("login.html", error="ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
     return render_template("login.html")
 
+# ===== Google Login =====
+@app.route("/auth/google")
+def auth_google():
+    redirect_uri = url_for("auth_google_callback", _external=True)
+    return google.authorize_redirect(redirect_uri)
+
+@app.route("/auth/google/callback")
+def auth_google_callback():
+    token = google.authorize_access_token()
+    userinfo = token["userinfo"]
+    email = userinfo["email"]
+    name = userinfo.get("name", email.split("@")[0])
+
+    # ใช้ email เป็น username
+    username = email
+
+    # ถ้ายังไม่มีในระบบ → สร้างให้อัตโนมัติ
+    if username not in users:
+        users[username] = {
+            "password": None,  # Google user ไม่มี password
+            "credit": 0,
+            "role": "user",
+            "total_topup": 0,
+            "display_name": name,
+            "google": True
+        }
+
+    session["user"] = username
+    update_online(username)
+    return redirect("/login-success")
+
 @app.route("/login-success")
 def login_success():
     user = get_user()
     if not user:
         return redirect("/login")
+    # แสดงชื่อสวยงาม ถ้า Google user ใช้ display_name
+    display = user.get("display_name", session["user"])
     return render_template("login_success.html",
-        username=session["user"],
+        username=display,
         credit=user["credit"])
 
+# ===== Register =====
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
@@ -104,8 +151,9 @@ def profile():
     user = get_user()
     if not user:
         return redirect("/login")
+    display = user.get("display_name", session["user"])
     return render_template("profile.html",
-        username=session["user"],
+        username=display,
         credit=user["credit"])
 
 @app.route("/topup")
@@ -129,9 +177,7 @@ def payment():
                 "amount": int(amount),
                 "filename": slip.filename
             })
-            return render_template("payment.html",
-                success=True, amount=amount,
-                credit=user["credit"])
+            return render_template("payment.html", success=True, amount=amount, credit=user["credit"])
     return render_template("payment.html", credit=user["credit"])
 
 @app.route("/credit")

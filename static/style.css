@@ -1073,3 +1073,47 @@ body {
 .buy-success p { color: var(--text-muted); margin-bottom: 1.5rem; }
 
 .buy-actions { display: flex; gap: 12px; justify-content: center; }
+
+/* ===== เพิ่มต่อท้าย style.css ===== */
+
+/* ปุ่ม Google */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px;
+    background: white;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 16px;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.btn-google:hover {
+    background: #f5f5f5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* เส้นคั่น "หรือ" */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 16px;
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}

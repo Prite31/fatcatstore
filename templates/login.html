@@ -7,50 +7,46 @@
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-
 <div class="login-page">
     <div class="login-overlay"></div>
-
     <div class="login-card">
         <div class="login-logo">🐱</div>
-        <h2>เข้าสู่ระบบ</h2>
-        <p class="login-sub">Login</p>
+        <h2>FAT CAT STORE</h2>
+        <p class="login-sub">เข้าสู่ระบบเพื่อเริ่มช้อปปิ้ง</p>
 
         {% if error %}
-            <p class="error-msg">{{ error }}</p>
+        <p class="error-msg">{{ error }}</p>
         {% endif %}
 
+        <!-- ปุ่ม Google -->
+        <a href="/auth/google" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20">
+            เข้าสู่ระบบด้วย Google
+        </a>
+
+        <div class="divider"><span>หรือ</span></div>
+
         <form method="POST">
-            <label>ชื่อผู้ใช้ / Username</label>
+            <label>ชื่อผู้ใช้</label>
             <input type="text" name="username" placeholder="กรอกชื่อผู้ใช้" required>
-
-            <label>รหัสผ่าน / Password</label>
+            <label>รหัสผ่าน</label>
             <div class="input-wrap">
-                <input type="password" name="password" id="password" placeholder="กรอกรหัสผ่าน" required>
-                <span class="eye-btn" onclick="togglePassword()">👁️</span>
+                <input type="password" name="password" id="pwd" placeholder="กรอกรหัสผ่าน" required>
+                <span class="eye-btn" onclick="togglePwd()">👁️</span>
             </div>
-
-            <div class="g-recaptcha"
-                data-sitekey="6Le5B-4sAAAAALm42PrVtHZ6z8x4gJGJsum25olb"
-                data-theme="dark"
-                style="margin-bottom:16px">
-            </div>
-
+            <div class="g-recaptcha" data-sitekey="6Le5B-4sAAAAANWBqYkmUiEfMrGjdDi1_1yb5fh0" style="margin-bottom:12px"></div>
             <button type="submit" class="btn-submit">เข้าสู่ระบบ</button>
         </form>
 
-        <p class="auth-link">ยังไม่ได้สร้างบัญชีใช่ไหม?
-            <a href="/register">คลิกที่นี่เพื่อสร้างบัญชี</a>
-        </p>
+        <p class="auth-link">ยังไม่มีบัญชี? <a href="/register">สมัครสมาชิก</a></p>
     </div>
 </div>
 
 <script>
-function togglePassword() {
-    const input = document.getElementById("password")
-    input.type = input.type === "password" ? "text" : "password"
+function togglePwd() {
+    const p = document.getElementById("pwd");
+    p.type = p.type === "password" ? "text" : "password";
 }
 </script>
-
 </body>
 </html>
