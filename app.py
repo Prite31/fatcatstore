@@ -256,10 +256,10 @@ def topup_truemoney():
                 credit=user["credit"], error=error)
 
         except Exception as e:
-            return render_template("truemoney.html",
-                credit=user["credit"],
-                error="❌ เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง")
-
+    print("TRUEMONEY ERROR:", str(e))
+    return render_template("truemoney.html",
+        credit=user["credit"],
+        error=f"❌ เกิดข้อผิดพลาด: {str(e)}")
     return render_template("truemoney.html", credit=user["credit"])
 
 @app.route("/credit")
