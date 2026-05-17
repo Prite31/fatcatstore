@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">🐱 FAT CAT STORE</div>
+        <div class="nav-links">
+            <a href="/">หน้าแรก</a>
+            <a href="/topup">เติมเครดิต</a>
+        </div>
+        <div class="nav-right">
+            {% if user %}
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/profile" class="btn-register">👤 {{ user }}</a>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+            {% else %}
+            <a href="/login" class="btn-login">เข้าสู่ระบบ</a>
+            <a href="/register" class="btn-register">สมัครสมาชิก</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="hero">
+        <span class="badge">⚡ เติมเงินรวดเร็ว ภายใน 5 นาที</span>
+        <h1>FAT CAT STORE</h1>
+        <p>เติมง่าย จ่ายสะดวก ปลอดภัย 100%</p>
+    </div>
+
+    <div class="section">
+        <p class="section-title">เกมที่ให้บริการ</p>
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="game-icon">🎮</div>
+                <h3>Roblox</h3>
+                <p>Roblox Corp</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <p class="section-title">สินค้า</p>
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">💎</div>
+                <div>
+                    <h3>เติม Robux</h3>
+                    <p>เติม Robux เข้าเกม</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="#">ติดต่อเรา</a> · 
+        <a href="#">LINE: @fatcatstore</a>
+    </div>
+
+</body>
+</html>

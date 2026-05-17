@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>อัพโหลดสลิป - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-right">
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+        </div>
+    </div>
+
+    <div class="payment-box">
+        <h2>📄 อัพโหลดสลิปโอนเงิน</h2>
+
+        {% if success %}
+        <div class="slip-success">
+            <p>✅ ส่งสลิปสำเร็จ!</p>
+            <p>รอ Admin ตรวจสอบและเติมเครดิต {{ amount }} บาท ภายใน 5 นาที</p>
+            <a href="/">กลับหน้าแรก</a>
+        </div>
+        {% else %}
+
+        <div class="bank-info">
+            <p>💳 ข้อมูลบัญชีธนาคาร</p>
+            <div class="bank-detail">
+                <div class="bank-row">
+                    <span>ธนาคาร</span>
+                    <strong>กสิกรไทย (KBank)</strong>
+                </div>
+                <div class="bank-row">
+                    <span>เลขบัญชี</span>
+                    <strong>201-3-69295-8</strong>
+                </div>
+                <div class="bank-row">
+                    <span>ชื่อบัญชี</span>
+                    <strong>ชนาธร รำไพภักดี</strong>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <label>จำนวนเงินที่โอน (บาท)</label>
+            <input type="number" name="amount" placeholder="เช่น 100" min="1" required>
+
+            <label>เลือกรูปสลิปโอนเงิน</label>
+            <div class="slip-upload" onclick="document.getElementById('slip-input').click()">
+                <div class="slip-icon">🖼️</div>
+                <p>คลิกเพื่อเลือกรูปสลิป</p>
+                <small>รองรับไฟล์รูปภาพทุกประเภท (ไม่เกิน 30MB)</small>
+                <input type="file" id="slip-input" name="slip" 
+                    accept="image/*" required style="display:none"
+                    onchange="showFileName(this)">
+            </div>
+            <p id="file-name" style="color:#8b8fff;font-size:13px;margin-top:8px"></p>
+
+            <button type="submit">✅ ยืนยันการส่งสลิป</button>
+        </form>
+        {% endif %}
+    </div>
+
+    <script>
+        function showFileName(input) {
+            document.getElementById("file-name").textContent = 
+                "📎 " + input.files[0].name
+        }
+    </script>
+</body>
+</html>

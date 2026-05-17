@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>โปรไฟล์ - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-right">
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+        </div>
+    </div>
+
+    <div class="profile-page">
+
+        <!-- หัวโปรไฟล์ -->
+        <div class="profile-header">
+            <div class="profile-avatar-big">{{ username[0]|upper }}</div>
+            <h2>{{ username }}</h2>
+            <p>สมาชิก FAT CAT STORE</p>
+        </div>
+
+        <!-- ยอดเงิน -->
+        <div class="profile-balance">
+            <div class="balance-card">
+                <p class="balance-label">💰 ยอดเงินคงเหลือ</p>
+                <p class="balance-amount">฿{{ credit }}</p>
+            </div>
+            <a href="/topup" class="btn-topup-big">+ เติมเงิน</a>
+        </div>
+
+        <!-- เนื้อหาหลัก -->
+        <div class="profile-content">
+
+            <!-- ข้อมูลส่วนตัว -->
+            <div class="profile-info-box">
+                <div class="profile-section-title">
+                    <span>👤</span> ข้อมูลส่วนตัว
+                </div>
+                <div class="profile-info-row">
+                    <span class="info-icon">👤</span>
+                    <div>
+                        <p class="info-label">ชื่อผู้ใช้</p>
+                        <p class="info-value">{{ username }}</p>
+                    </div>
+                </div>
+                <div class="profile-info-row">
+                    <span class="info-icon">🎭</span>
+                    <div>
+                        <p class="info-label">บทบาท</p>
+                        <p class="info-value">สมาชิก</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- เมนูด่วน -->
+            <div class="profile-menu-box">
+                <div class="profile-section-title">
+                    <span>⚡</span> เมนูด่วน
+                </div>
+                <a href="/topup" class="profile-menu-item">
+                    <span>💰 เติมเงิน</span>
+                    <span>›</span>
+                </a>
+                <a href="/payment" class="profile-menu-item">
+                    <span>📋 ประวัติการเติม</span>
+                    <span>›</span>
+                </a>
+                <a href="/" class="profile-menu-item">
+                    <span>🛒 ช้อปปิ้ง</span>
+                    <span>›</span>
+                </a>
+                <a href="/logout" class="profile-menu-item" style="color:#ff6b6b">
+                    <span>🚪 ออกจากระบบ</span>
+                    <span>›</span>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

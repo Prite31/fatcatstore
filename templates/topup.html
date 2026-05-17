@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เติมเครดิต - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-right">
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+        </div>
+    </div>
+
+    <div class="topup-select-box">
+        <h2>ช่องทางการชำระเงิน</h2>
+        <p class="topup-sub">เลือกช่องทางเพื่อเติมเครดิตเข้าบัญชีของคุณ</p>
+
+        <div class="payment-option" onclick="window.location.href='/payment'">
+            <div class="payment-left">
+                <div class="payment-icon">🏦</div>
+                <div>
+                    <h3>โอนผ่านธนาคาร</h3>
+                    <p>อัพโหลดสลิปโอนเงินเพื่อเติมเครดิต</p>
+                    <small>รองรับการโอนผ่านทุกธนาคาร</small>
+                </div>
+            </div>
+            <div class="payment-right">
+                <span class="payment-badge">พร้อมใช้งาน</span>
+                <button class="btn-select">เลือก →</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

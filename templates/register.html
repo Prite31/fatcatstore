@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>สมัครสมาชิก - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+    </div>
+
+    <div class="auth-box">
+        <h2>สมัครสมาชิก</h2>
+        {% if error %}
+            <p class="error-msg">{{ error }}</p>
+        {% endif %}
+        <form method="POST">
+            <input type="text" name="username" placeholder="ชื่อผู้ใช้" required>
+            <input type="password" name="password" placeholder="รหัสผ่าน" required>
+            <button type="submit">สมัครสมาชิก</button>
+        </form>
+        <p class="auth-link">มีบัญชีแล้ว? <a href="/login">เข้าสู่ระบบ</a></p>
+    </div>
+</body>
+</html>

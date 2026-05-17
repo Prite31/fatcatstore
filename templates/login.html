@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เข้าสู่ระบบ - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+
+<div class="login-page">
+    <div class="login-overlay"></div>
+
+    <div class="login-card">
+        <div class="login-logo">🐱</div>
+        <h2>เข้าสู่ระบบ</h2>
+        <p class="login-sub">Login</p>
+
+        {% if error %}
+            <p class="error-msg">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST">
+            <label>ชื่อผู้ใช้ / Username</label>
+            <input type="text" name="username" placeholder="กรอกชื่อผู้ใช้" required>
+
+            <label>รหัสผ่าน / Password</label>
+            <div class="input-wrap">
+                <input type="password" name="password" id="password" placeholder="กรอกรหัสผ่าน" required>
+                <span class="eye-btn" onclick="togglePassword()">👁️</span>
+            </div>
+
+            <div class="g-recaptcha"
+                data-sitekey="6Le5B-4sAAAAALm42PrVtHZ6z8x4gJGJsum25olb"
+                data-theme="dark"
+                style="margin-bottom:16px">
+            </div>
+
+            <button type="submit" class="btn-submit">เข้าสู่ระบบ</button>
+        </form>
+
+        <p class="auth-link">ยังไม่ได้สร้างบัญชีใช่ไหม?
+            <a href="/register">คลิกที่นี่เพื่อสร้างบัญชี</a>
+        </p>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const input = document.getElementById("password")
+    input.type = input.type === "password" ? "text" : "password"
+}
+</script>
+
+</body>
+</html>
