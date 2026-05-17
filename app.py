@@ -204,13 +204,15 @@ def history():
     user = get_user()
     if not user:
         return redirect("/login")
+    tab = request.args.get("tab", "topup")
     user_slips = [s for s in pending_slips if s["user"] == session["user"]]
     user_purchases = [p for p in purchase_history if p["user"] == session["user"]]
     return render_template("history.html",
         username=get_display(session["user"]),
         credit=user["credit"],
         slips=user_slips,
-        purchases=user_purchases)
+        purchases=user_purchases,
+        tab=tab)
 
 @app.route("/shop")
 def shop():
