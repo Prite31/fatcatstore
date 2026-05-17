@@ -208,11 +208,15 @@ def topup_truemoney():
             phone = os.environ.get("TRUEMONEY_PHONE", "")
             api_url = f"https://gift.truemoney.com/campaign/vouchers/{voucher}/redeem"
             api_response = req.post(api_url, json={
-                "mobile": phone,
+                 "mobile": phone,
                 "voucher_hash": voucher
-            }, headers={
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0"
+            },  headers={
+                 "Content-Type": "application/json",
+                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                 "Accept": "application/json, text/plain, */*",
+                 "Accept-Language": "th-TH,th;q=0.9,en;q=0.8",
+                 "Origin": "https://gift.truemoney.com",
+                 "Referer": f"https://gift.truemoney.com/campaign/?v={voucher}"
             }, timeout=10)
 
             print("TRUEMONEY RAW:", api_response.status_code, api_response.text[:500])
