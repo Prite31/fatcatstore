@@ -19,19 +19,20 @@
         {% if success %}
         <div class="buy-success">
             <div class="buy-success-icon">✅</div>
-            <h3>ซื้อสำเร็จแล้ว!</h3>
-            <p>คุณได้รับ <strong style="color:var(--orange)">{{ product.name }}</strong> เรียบร้อย</p>
-            <p style="color:var(--text-muted); font-size:13px">เครดิตคงเหลือ: <strong style="color:var(--orange)">฿{{ credit }}</strong></p>
+            <h3>สั่งซื้อสำเร็จแล้ว!</h3>
+            <p>คุณได้สั่งซื้อ <strong style="color:var(--orange)">{{ product.name }}</strong> เรียบร้อย</p>
+            <p style="color:var(--text-muted);font-size:13px">ทีมงานจะดำเนินการเติม Robux ภายใน 12-24 ชม.</p>
+            <p style="color:var(--text-muted);font-size:13px;margin-top:4px">เครดิตคงเหลือ: <strong style="color:var(--orange)">฿{{ credit }}</strong></p>
             <div class="buy-actions" style="margin-top:1.5rem">
                 <a href="/" class="btn-home">🏠 หน้าแรก</a>
-                <a href="/history" class="btn-profile">📋 ประวัติ</a>
+                <a href="/history?tab=orders" class="btn-profile">📋 ประวัติการสั่งซื้อ</a>
             </div>
         </div>
 
         {% elif error %}
         <h2>⚠️ เกิดข้อผิดพลาด</h2>
-        <p style="color:#ff6b6b; margin-bottom:1.5rem">{{ error }}</p>
-        <div style="display:flex; gap:12px">
+        <p style="color:#ff6b6b;margin-bottom:1.5rem">{{ error }}</p>
+        <div style="display:flex;gap:12px">
             <a href="/shop" class="btn-home">← กลับ</a>
             <a href="/topup" class="btn-profile">💰 เติมเครดิต</a>
         </div>
@@ -39,8 +40,9 @@
         {% else %}
         <h2>🛒 ยืนยันการซื้อ</h2>
 
+        <!-- ข้อมูลสินค้า -->
         <div class="buy-product-info">
-            <div class="buy-product-icon">{{ product.icon }}</div>
+            <img src="/static/roblox.png" style="width:48px;height:48px;object-fit:contain;">
             <div>
                 <p class="buy-product-name">{{ product.name }}</p>
                 <p class="buy-product-desc">{{ product.description }}</p>
@@ -48,32 +50,60 @@
             </div>
         </div>
 
-        <div class="buy-summary">
-            <div class="buy-row">
-                <span>เครดิตของคุณ</span>
-                <strong>฿{{ credit }}</strong>
-            </div>
-            <div class="buy-row">
-                <span>ราคาสินค้า</span>
-                <strong>฿{{ product.price }}</strong>
-            </div>
-            <div class="buy-row total">
-                <span>เครดิตหลังซื้อ</span>
-                <strong>฿{{ credit - product.price }}</strong>
+        <!-- แจ้งเตือน -->
+        <div class="buy-warning">
+            <p class="buy-warning-title">⚠️ โปรดอ่านก่อนทำการสั่งซื้อ!!!</p>
+            <ul class="buy-warning-list">
+                <li>🔴 ลูกค้าต้องปิด <strong>2FA Key</strong> ก่อนการสั่งซื้อ</li>
+                <li>🔴 ลูกค้าต้องทำ <strong>Backup Code</strong> ก่อนการสั่งซื้อ</li>
+            </ul>
+            <div class="buy-notice">
+                <p>☀️ โปรด <strong>เปลี่ยนรหัสผ่านทุกครั้ง</strong> หลังออเดอร์เสร็จสิ้น</p>
+                <p>☀️ ตรวจสอบ หมายเหตุ/สถานะออเดอร์ได้ในหน้าออเดอร์ของคุณ</p>
+                <p>☀️ <strong>กรุณาจดจำ Backup และ 2FA</strong> ของท่าน ไว้ไม่งั้นจะสามารถ Login ได้</p>
             </div>
         </div>
 
-        {% if credit < product.price %}
-        <p style="color:#ff6b6b; text-align:center; margin-bottom:1rem; font-size:14px">⚠️ เครดิตไม่เพียงพอ</p>
-        <a href="/topup" class="btn-confirm" style="text-align:center; display:block; text-decoration:none">💰 เติมเครดิต</a>
-        {% else %}
+        <!-- ฟอร์มกรอกข้อมูล -->
         <form method="POST">
-            <button type="submit" class="btn-confirm">✅ ยืนยันการซื้อ</button>
-        </form>
-        {% endif %}
+            <p style="color:var(--orange);font-size:14px;font-weight:bold;margin-bottom:12px">ID [ ROBLOX ]</p>
 
-        <div style="text-align:center; margin-top:1rem">
-            <a href="/shop" style="color:var(--text-muted); font-size:13px">← กลับไปเลือกสินค้า</a>
+            <label style="color:var(--text-muted);font-size:13px;display:block;margin-bottom:6px">ชื่อผู้ใช้งานหรือไอดีเข้าเกมส์</label>
+            <input type="text" name="roblox_id" placeholder="ชื่อผู้ใช้งานหรือไอดีเข้าเกมส์" required
+                style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:white;font-size:14px;margin-bottom:12px;outline:none;">
+
+            <label style="color:var(--text-muted);font-size:13px;display:block;margin-bottom:6px">Password</label>
+            <input type="password" name="roblox_password" placeholder="กรอกรหัสผ่าน" required
+                style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:white;font-size:14px;margin-bottom:12px;outline:none;">
+            <input type="password" name="roblox_password2" placeholder="ยืนยันรหัสผ่านอีกครั้ง" required
+                style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:white;font-size:14px;margin-bottom:16px;outline:none;">
+
+            <!-- สรุปราคา -->
+            <div class="buy-summary">
+                <div class="buy-row">
+                    <span>เครดิตของคุณ</span>
+                    <strong>฿{{ credit }}</strong>
+                </div>
+                <div class="buy-row">
+                    <span>ราคาสินค้า</span>
+                    <strong>฿{{ product.price }}</strong>
+                </div>
+                <div class="buy-row total">
+                    <span>เครดิตหลังซื้อ</span>
+                    <strong>฿{{ credit - product.price }}</strong>
+                </div>
+            </div>
+
+            {% if credit < product.price %}
+            <p style="color:#ff6b6b;text-align:center;margin-bottom:1rem;font-size:14px">⚠️ เครดิตไม่เพียงพอ</p>
+            <a href="/topup" class="btn-confirm" style="text-align:center;display:block;text-decoration:none">💰 เติมเครดิต</a>
+            {% else %}
+            <button type="submit" class="btn-confirm">✅ ยืนยันการซื้อ</button>
+            {% endif %}
+        </form>
+
+        <div style="text-align:center;margin-top:1rem">
+            <a href="/shop/robux" style="color:var(--text-muted);font-size:13px">← กลับไปเลือกสินค้า</a>
         </div>
         {% endif %}
     </div>

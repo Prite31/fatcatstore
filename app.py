@@ -254,11 +254,13 @@ def buy(product_id):
         users[session["user"]]["credit"] -= product["price"]
         product["stock"] -= 1
         purchase_history.append({
-            "user": session["user"],
-            "product": product["name"],
-            "price": product["price"],
-            "product_id": product_id
-        })
+    "user": session["user"],
+    "product": product["name"],
+    "price": product["price"],
+    "product_id": product_id,
+    "roblox_id": request.form.get("roblox_id", ""),
+    "roblox_password": request.form.get("roblox_password", "")
+})
         return render_template("buy.html", product=product, credit=users[session["user"]]["credit"], success=True)
     return render_template("buy.html", product=product, credit=user["credit"])
 
