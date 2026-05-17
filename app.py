@@ -1,3 +1,5 @@
+from urllib import response
+
 from flask import Flask, render_template, request, redirect, session, jsonify, url_for
 import requests as req
 import time
@@ -223,6 +225,7 @@ def topup_truemoney():
                 "User-Agent": "Mozilla/5.0"
             }, timeout=10)
 
+            print("TRUEMONEY RAW:", response.status_code, response.text[:500])
             data = response.json()
             status = data.get("status", {})
             code = status.get("code", "")
