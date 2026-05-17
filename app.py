@@ -199,7 +199,7 @@ def topup_truemoney():
         return redirect("/login")
     if request.method == "POST":
         link = request.form.get("truemoney_link", "").strip()
-        if not link.startswith("https://gift.truemoney.com"):
+        if "gift.truemoney.com" not in link:
             return render_template("truemoney.html",
                 credit=user["credit"],
                 error="❌ ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์จาก TrueMoney Wallet เท่านั้น")
