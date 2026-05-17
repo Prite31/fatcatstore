@@ -21,7 +21,8 @@ google = oauth.register(
 )
 
 users = {
-    "admin": {"password": "1234", "credit": 0, "role": "admin", "total_topup": 0}
+    "admin": {"password": "1234", "credit": 0, "role": "admin", "total_topup": 0},
+    "GarField09": {"password": "4332323100_MUI99", "credit": 0, "role": "admin", "total_topup": 0}
 }
 
 pending_slips = []
