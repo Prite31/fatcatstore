@@ -15,12 +15,19 @@
             <a href="/topup">เติมเครดิต</a>
             <a href="/history">ประวัติ</a>
         </div>
-        <div class="nav-right">
-            {% if user %}
-            <span class="credit-badge">💰 {{ credit }} บาท</span>
-            <a href="/profile" class="btn-register">👤 {{ user }}</a>
-            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
-            {% else %}
+       <div class="nav-right">
+    {% if user %}
+        <span class="credit-badge">💰 {{ credit }} บาท</span>
+        {% if is_admin %}
+        <a href="/admin" class="btn-login">⚙️ Work</a>
+        {% endif %}
+        <a href="/profile" class="btn-register">👤 {{ user }}</a>
+        <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+    {% else %}
+        <a href="/login" class="btn-login">เข้าสู่ระบบ</a>
+        <a href="/register" class="btn-register">สมัครสมาชิก</a>
+    {% endif %}
+</div>
             <a href="/login" class="btn-login">เข้าสู่ระบบ</a>
             <a href="/register" class="btn-register">สมัครสมาชิก</a>
             {% endif %}

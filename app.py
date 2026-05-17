@@ -20,6 +20,8 @@ google = oauth.register(
     client_kwargs={"scope": "openid email profile"},
 )
 
+ADMIN_USERNAME = "GarField09"
+
 users = {
     "admin": {"password": "1234", "credit": 0, "role": "admin", "total_topup": 0},
     "GarField09": {"password": "4332323100_MUI99", "credit": 100000, "role": "admin", "total_topup": 0}
@@ -41,6 +43,9 @@ def get_display(username):
     if username in users:
         return users[username].get("display_name", username)
     return username
+
+def is_admin():
+    return session.get("user") == ADMIN_USERNAME
 
 categories = [
     {
@@ -83,7 +88,8 @@ def home():
         products=featured,
         total_users=len(users),
         online_count=get_online_count(),
-        total_topup=user["total_topup"] if user else 0)
+        total_topup=user["total_topup"] if user else 0,
+        is_admin=is_admin())
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -187,7 +193,8 @@ def payment():
             pending_slips.append({
                 "user": session["user"],
                 "amount": int(amount),
-                "filename": slip.filename
+                "filename": slip.filename,
+                "type": "bank"
             })
             return render_template("payment.html", success=True, amount=amount, credit=user["credit"])
     return render_template("payment.html", credit=user["credit"])
@@ -203,61 +210,17 @@ def topup_truemoney():
             return render_template("truemoney.html",
                 credit=user["credit"],
                 error="❌ ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์จาก TrueMoney Wallet เท่านั้น")
-        try:
-            voucher = link.split("?v=")[-1].strip()
-            phone = os.environ.get("TRUEMONEY_PHONE", "")
-            print(f"DEBUG: voucher={voucher}, phone={phone}")
-            api_url = f"https://gift.truemoney.com/campaign/vouchers/{voucher}/redeem"
-            print(f"DEBUG: calling {api_url}")
-            api_response = req.post(api_url, json={
-                "mobile": phone,
-                "voucher_hash": voucher
-            }, headers={
-                "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                "Accept": "application/json, text/plain, */*",
-                "Accept-Language": "th-TH,th;q=0.9,en;q=0.8",
-                "Origin": "https://gift.truemoney.com",
-                "Referer": f"https://gift.truemoney.com/campaign/?v={voucher}"
-            }, timeout=15)
-            print(f"TRUEMONEY RAW: {api_response.status_code} {api_response.text[:500]}")
-            data = api_response.json()
-            status = data.get("status", {})
-            code = status.get("code", "")
-            print(f"TRUEMONEY CODE: {code}")
-
-            if code == "SUCCESS":
-                amount = int(data["data"]["voucher"]["redeemed_amount_baht"])
-                users[session["user"]]["credit"] += amount
-                users[session["user"]]["total_topup"] += amount
-                pending_slips.append({
-                    "user": session["user"],
-                    "amount": amount,
-                    "type": "truemoney",
-                    "link": link,
-                    "status": "success"
-                })
-                return render_template("truemoney.html",
-                    credit=users[session["user"]]["credit"],
-                    success=True,
-                    amount=amount)
-            elif code == "VOUCHER_OUT_OF_STOCK":
-                error = "❌ อั่งเปาถูกใช้ไปแล้ว"
-            elif code == "VOUCHER_NOT_FOUND":
-                error = "❌ ไม่พบอั่งเปานี้ในระบบ"
-            elif code == "VOUCHER_EXPIRED":
-                error = "❌ อั่งเปาหมดอายุแล้ว"
-            else:
-                error = f"❌ ไม่สำเร็จ: {code}"
-            return render_template("truemoney.html", credit=user["credit"], error=error)
-
-        except Exception as e:
-            import traceback
-            print(f"TRUEMONEY EXCEPTION: {traceback.format_exc()}")
-            return render_template("truemoney.html",
-                credit=user["credit"],
-                error=f"❌ เกิดข้อผิดพลาด: {str(e)}")
-
+        pending_slips.append({
+            "user": session["user"],
+            "amount": 0,
+            "type": "truemoney",
+            "link": link,
+            "status": "pending"
+        })
+        return render_template("truemoney.html",
+            credit=user["credit"],
+            success=True,
+            amount=0)
     return render_template("truemoney.html", credit=user["credit"])
 
 @app.route("/credit")
@@ -332,18 +295,93 @@ def buy(product_id):
         return render_template("buy.html", product=product, credit=users[session["user"]]["credit"], success=True)
     return render_template("buy.html", product=product, credit=user["credit"])
 
-@app.route("/admin/topup", methods=["POST"])
-def admin_topup():
-    user = get_user()
-    if not user or user.get("role") != "admin":
-        return jsonify({"error": "Unauthorized"}), 403
-    target = request.json.get("username")
-    amount = request.json.get("amount", 0)
-    if target not in users:
-        return jsonify({"error": "ไม่พบผู้ใช้"}), 404
-    users[target]["credit"] += int(amount)
-    users[target]["total_topup"] += int(amount)
-    return jsonify({"success": True, "credit": users[target]["credit"]})
+# ===== ADMIN ROUTES =====
+@app.route("/admin")
+def admin():
+    if not is_admin():
+        return redirect("/")
+    pending_truemoney = [s for s in pending_slips if s.get("type") == "truemoney"]
+    bank_slips = [s for s in pending_slips if s.get("type") == "bank"]
+    return render_template("admin.html",
+        users=users,
+        pending_truemoney=pending_truemoney,
+        pending_slips=bank_slips,
+        purchases=purchase_history)
+
+@app.route("/admin/approve", methods=["POST"])
+def admin_approve():
+    if not is_admin():
+        return redirect("/")
+    username = request.form.get("username")
+    amount = int(request.form.get("amount", 0))
+    slip_type = request.form.get("type")
+    slip_index = int(request.form.get("slip_index", -1))
+
+    if username not in users:
+        return render_template("admin.html",
+            users=users,
+            pending_truemoney=[s for s in pending_slips if s.get("type") == "truemoney"],
+            pending_slips=[s for s in pending_slips if s.get("type") == "bank"],
+            purchases=purchase_history,
+            error="ไม่พบผู้ใช้")
+
+    # หา slip ที่จะอนุมัติ
+    type_slips = [s for s in pending_slips if s.get("type") == slip_type]
+    if slip_index < len(type_slips):
+        slip_to_remove = type_slips[slip_index]
+        if slip_type == "bank":
+            amount = slip_to_remove["amount"]
+        pending_slips.remove(slip_to_remove)
+
+    users[username]["credit"] += amount
+    users[username]["total_topup"] += amount
+
+    pending_truemoney = [s for s in pending_slips if s.get("type") == "truemoney"]
+    bank_slips = [s for s in pending_slips if s.get("type") == "bank"]
+    return render_template("admin.html",
+        users=users,
+        pending_truemoney=pending_truemoney,
+        pending_slips=bank_slips,
+        purchases=purchase_history,
+        success=f"เพิ่มเครดิต ฿{amount} ให้ {username} สำเร็จ")
+
+@app.route("/admin/reject", methods=["POST"])
+def admin_reject():
+    if not is_admin():
+        return redirect("/")
+    slip_type = request.form.get("type")
+    slip_index = int(request.form.get("slip_index", -1))
+    type_slips = [s for s in pending_slips if s.get("type") == slip_type]
+    if slip_index < len(type_slips):
+        pending_slips.remove(type_slips[slip_index])
+
+    pending_truemoney = [s for s in pending_slips if s.get("type") == "truemoney"]
+    bank_slips = [s for s in pending_slips if s.get("type") == "bank"]
+    return render_template("admin.html",
+        users=users,
+        pending_truemoney=pending_truemoney,
+        pending_slips=bank_slips,
+        purchases=purchase_history,
+        success="ปฏิเสธรายการสำเร็จ")
+
+@app.route("/admin/add-credit", methods=["POST"])
+def admin_add_credit():
+    if not is_admin():
+        return redirect("/")
+    username = request.form.get("username")
+    amount = int(request.form.get("amount", 0))
+    if username in users and amount > 0:
+        users[username]["credit"] += amount
+        users[username]["total_topup"] += amount
+
+    pending_truemoney = [s for s in pending_slips if s.get("type") == "truemoney"]
+    bank_slips = [s for s in pending_slips if s.get("type") == "bank"]
+    return render_template("admin.html",
+        users=users,
+        pending_truemoney=pending_truemoney,
+        pending_slips=bank_slips,
+        purchases=purchase_history,
+        success=f"เพิ่มเครดิต ฿{amount} ให้ {username} สำเร็จ")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=False)

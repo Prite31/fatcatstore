@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-right">
+            <span class="credit-badge">👑 Admin</span>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+        </div>
+    </div>
+
+    <div class="section" style="max-width:1100px;margin:0 auto">
+        <div class="section-header">
+            <div>
+                <p class="section-title">👑 Admin Dashboard</p>
+                <p class="section-sub">จัดการระบบ FAT CAT STORE</p>
+            </div>
+        </div>
+
+        {% if success %}
+        <div style="background:rgba(0,200,100,0.1);border:1px solid #00c864;border-radius:8px;padding:12px 16px;margin-bottom:1.5rem;color:#00c864">
+            ✅ {{ success }}
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div style="background:rgba(255,107,107,0.1);border:1px solid #ff6b6b;border-radius:8px;padding:12px 16px;margin-bottom:1.5rem;color:#ff6b6b">
+            ❌ {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- สถิติ -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:2rem">
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
+                <p style="color:var(--text-muted);font-size:13px">ผู้ใช้ทั้งหมด</p>
+                <p style="color:var(--orange);font-size:28px;font-weight:bold">{{ users|length }}</p>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
+                <p style="color:var(--text-muted);font-size:13px">อั่งเปารอตรวจ</p>
+                <p style="color:#ffc800;font-size:28px;font-weight:bold">{{ pending_truemoney|length }}</p>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
+                <p style="color:var(--text-muted);font-size:13px">สลิปรอตรวจ</p>
+                <p style="color:#ffc800;font-size:28px;font-weight:bold">{{ pending_slips|length }}</p>
+            </div>
+            <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;text-align:center">
+                <p style="color:var(--text-muted);font-size:13px">ออเดอร์ทั้งหมด</p>
+                <p style="color:#6bffb8;font-size:28px;font-weight:bold">{{ purchases|length }}</p>
+            </div>
+        </div>
+
+        <!-- อั่งเปารอตรวจสอบ -->
+        <div class="history-table-wrap" style="margin-bottom:2rem">
+            <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+                <span style="color:var(--orange);font-weight:bold">🧧 อั่งเปารอตรวจสอบ</span>
+            </div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>ลิงก์อั่งเปา</th>
+                        <th>เพิ่มเครดิต</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slip in pending_truemoney %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">{{ slip.user[0]|upper }}</div>
+                                {{ slip.user }}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ slip.link }}" target="_blank" style="color:var(--orange);font-size:13px;word-break:break-all">
+                                🔗 คลิกเพื่อรับอั่งเปา
+                            </a>
+                        </td>
+                        <td>
+                            <form method="POST" action="/admin/approve" style="display:flex;gap:8px;align-items:center">
+                                <input type="hidden" name="slip_index" value="{{ loop.index0 }}">
+                                <input type="hidden" name="username" value="{{ slip.user }}">
+                                <input type="hidden" name="type" value="truemoney">
+                                <input type="number" name="amount" placeholder="จำนวนเงิน" min="1"
+                                    style="width:120px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:white;font-size:13px">
+                                <button type="submit" class="btn-detail" style="background:var(--orange);color:white;border:none;cursor:pointer">
+                                    ✅ อนุมัติ
+                                </button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="/admin/reject">
+                                <input type="hidden" name="slip_index" value="{{ loop.index0 }}">
+                                <input type="hidden" name="type" value="truemoney">
+                                <button type="submit" class="btn-detail" style="background:rgba(255,107,107,0.2);color:#ff6b6b;border:1px solid #ff6b6b;cursor:pointer">
+                                    ❌ ปฏิเสธ
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" class="empty-row">ไม่มีอั่งเปารอตรวจสอบ</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- สลิปโอนเงินรอตรวจสอบ -->
+        <div class="history-table-wrap" style="margin-bottom:2rem">
+            <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+                <span style="color:var(--orange);font-weight:bold">🏦 สลิปโอนเงินรอตรวจสอบ</span>
+            </div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>จำนวนเงิน</th>
+                        <th>ไฟล์สลิป</th>
+                        <th>จัดการ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for slip in pending_slips %}
+                    {% if slip.get('type') != 'truemoney' %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">{{ slip.user[0]|upper }}</div>
+                                {{ slip.user }}
+                            </div>
+                        </td>
+                        <td><strong>฿{{ slip.amount }}</strong></td>
+                        <td style="color:var(--text-muted);font-size:13px">{{ slip.filename }}</td>
+                        <td>
+                            <form method="POST" action="/admin/approve" style="display:inline">
+                                <input type="hidden" name="slip_index" value="{{ loop.index0 }}">
+                                <input type="hidden" name="username" value="{{ slip.user }}">
+                                <input type="hidden" name="amount" value="{{ slip.amount }}">
+                                <input type="hidden" name="type" value="bank">
+                                <button type="submit" class="btn-detail" style="background:var(--orange);color:white;border:none;cursor:pointer">
+                                    ✅ อนุมัติ
+                                </button>
+                            </form>
+                            <form method="POST" action="/admin/reject" style="display:inline;margin-left:8px">
+                                <input type="hidden" name="slip_index" value="{{ loop.index0 }}">
+                                <input type="hidden" name="type" value="bank">
+                                <button type="submit" class="btn-detail" style="background:rgba(255,107,107,0.2);color:#ff6b6b;border:1px solid #ff6b6b;cursor:pointer">
+                                    ❌ ปฏิเสธ
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% else %}
+                    <tr><td colspan="4" class="empty-row">ไม่มีสลิปรอตรวจสอบ</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- จัดการ User -->
+        <div class="history-table-wrap" style="margin-bottom:2rem">
+            <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border)">
+                <span style="color:var(--orange);font-weight:bold">👥 จัดการผู้ใช้</span>
+            </div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>เครดิต</th>
+                        <th>เพิ่มเครดิต</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, data in users.items() %}
+                    <tr>
+                        <td>
+                            <div class="user-cell">
+                                <div class="user-avatar">{{ username[0]|upper }}</div>
+                                {{ data.get('display_name', username) }}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="{{ 'status-success' if data.role == 'admin' else 'status-pending' }}">
+                                {{ data.role }}
+                            </span>
+                        </td>
+                        <td><strong style="color:var(--orange)">฿{{ data.credit }}</strong></td>
+                        <td>
+                            <form method="POST" action="/admin/add-credit" style="display:flex;gap:8px;align-items:center">
+                                <input type="hidden" name="username" value="{{ username }}">
+                                <input type="number" name="amount" placeholder="จำนวน" min="1"
+                                    style="width:100px;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:white;font-size:13px">
+                                <button type="submit" class="btn-detail" style="background:var(--orange);color:white;border:none;cursor:pointer">
+                                    + เพิ่ม
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</body>
+</html>
