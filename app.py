@@ -102,5 +102,15 @@ def credit():
         return jsonify({"credit": 0})
     return jsonify({"credit": users[session["user"]]["credit"]})
 
+@app.route("/history")
+def history():
+    if "user" not in session:
+        return redirect("/login")
+    user_slips = [s for s in pending_slips if s["user"] == session["user"]]
+    return render_template("history.html",
+        username=session["user"],
+        credit=users[session["user"]]["credit"],
+        slips=user_slips)
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000, debug=False)
