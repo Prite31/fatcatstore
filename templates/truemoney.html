@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>เติมเครดิตด้วยอั่งเปา - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-right">
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+        </div>
+    </div>
+
+    <div class="payment-box">
+        <h2>🧧 เติมเครดิตด้วยอั่งเปา</h2>
+
+        {% if success %}
+        <div class="slip-success">
+            <p>✅ ส่งลิงก์อั่งเปาสำเร็จ!</p>
+            <p>รอ Admin ตรวจสอบและเติมเครดิตภายใน 5 นาที</p>
+            <a href="/">กลับหน้าแรก</a>
+        </div>
+        {% elif error %}
+        <p class="error-msg">{{ error }}</p>
+        {% endif %}
+
+        {% if not success %}
+        <!-- วิธีใช้ -->
+        <div class="bank-info" style="margin-bottom:1.5rem">
+            <p style="color:var(--orange);font-weight:bold;margin-bottom:8px">📋 วิธีส่งอั่งเปา</p>
+            <div class="bank-row">
+                <span>1️⃣</span>
+                <strong>เปิดแอป TrueMoney Wallet</strong>
+            </div>
+            <div class="bank-row">
+                <span>2️⃣</span>
+                <strong>กด "อั่งเปา" → สร้างอั่งเปา</strong>
+            </div>
+            <div class="bank-row">
+                <span>3️⃣</span>
+                <strong>Copy ลิงก์อั่งเปามาวางด้านล่าง</strong>
+            </div>
+        </div>
+
+        <form method="POST">
+            <label style="color:var(--text-muted);font-size:13px;display:block;margin-bottom:6px">
+                ลิงก์อั่งเปา TrueMoney
+            </label>
+            <input type="url" name="truemoney_link"
+                placeholder="https://gift.truemoney.com/campaign/?v=..."
+                required
+                style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:white;font-size:14px;margin-bottom:16px;outline:none;box-sizing:border-box;">
+
+            <div class="bank-info" style="margin-bottom:1.5rem">
+                <p style="color:#ffc800;font-size:13px">
+                    ⚠️ ลิงก์อั่งเปาใช้ได้ครั้งเดียว อย่าแชร์ให้ใครก่อนส่งมาที่นี่
+                </p>
+            </div>
+
+            <button type="submit" style="width:100%;padding:12px;background:var(--orange);color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;">
+                🧧 ส่งลิงก์อั่งเปา
+            </button>
+        </form>
+
+        <div style="text-align:center;margin-top:1rem">
+            <a href="/topup" style="color:var(--text-muted);font-size:13px">← กลับเลือกช่องทางชำระเงิน</a>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
