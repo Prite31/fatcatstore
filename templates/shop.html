@@ -29,58 +29,28 @@
     <div class="section">
         <div class="section-header">
             <div>
-                <p class="section-title">🛒 สินค้าทั้งหมด</p>
-                <p class="section-sub">All Products</p>
+                <p class="section-title">🛒 หมวดหมู่สินค้า</p>
+                <p class="section-sub">Select Category</p>
             </div>
         </div>
 
-        <div class="product-grid">
-            {% for product in products %}
-            <div class="product-card {% if product.stock == 0 %}out-of-stock{% endif %}">
-                <div class="product-badge-wrap">
-                    {% if product.recommended %}
-                    <span class="product-badge-rec">⭐ แนะนำ</span>
-                    {% endif %}
-                    {% if product.stock == 0 %}
-                    <span class="product-badge-out">หมด</span>
-                    {% endif %}
+        <div class="category-grid">
+            {% for cat in categories %}
+            <a href="/shop/{{ cat.id }}" class="category-card">
+                <div class="category-img-wrap">
+                    <img src="{{ cat.image }}" alt="{{ cat.name }}" class="category-img">
                 </div>
-                <div class="product-icon">{{ product.icon }}</div>
-                <div class="product-info">
-                    <h3 class="product-name">{{ product.name }}</h3>
-                    <p class="product-desc">{{ product.description }}</p>
-                    <div class="product-footer">
-                        <div>
-                            <p class="product-price">฿{{ product.price }}</p>
-                            <p class="product-stock {% if product.stock <= 5 and product.stock > 0 %}stock-low{% endif %}">
-                                {% if product.stock == 0 %}
-                                🔴 สินค้าหมด
-                                {% elif product.stock <= 5 %}
-                                🟡 คงเหลือ: {{ product.stock }}
-                                {% else %}
-                                🟢 คงเหลือ: {{ product.stock }}
-                                {% endif %}
-                            </p>
-                        </div>
-                        {% if product.stock > 0 %}
-                        <a href="/buy/{{ product.id }}" class="btn-buy">🛒 ซื้อเลย</a>
-                        {% else %}
-                        <button class="btn-buy btn-disabled" disabled>หมด</button>
-                        {% endif %}
-                    </div>
+                <div class="category-info">
+                    <h3 class="category-name">{{ cat.name }}</h3>
+                    <p class="category-desc">{{ cat.description }}</p>
                 </div>
-            </div>
-            {% else %}
-            <div class="no-products">
-                <p>🐱 ยังไม่มีสินค้าในขณะนี้</p>
-            </div>
+            </a>
             {% endfor %}
         </div>
     </div>
 
     <div class="footer">
-        <a href="#">ติดต่อเรา</a> · 
-        <a href="#">LINE: @fatcatstore</a>
+        <a href="#">ติดต่อเรา</a> · <a href="#">LINE: @fatcatstore</a>
     </div>
 </body>
 </html>

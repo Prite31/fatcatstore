@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ category.name }} - FAT CAT STORE</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="/" style="color:white;text-decoration:none">🐱 FAT CAT STORE</a></div>
+        <div class="nav-links">
+            <a href="/">หน้าแรก</a>
+            <a href="/shop">สินค้าทั้งหมด</a>
+            <a href="/topup">เติมเครดิต</a>
+            <a href="/history">ประวัติ</a>
+        </div>
+        <div class="nav-right">
+            {% if user %}
+            <span class="credit-badge">💰 {{ credit }} บาท</span>
+            <a href="/profile" class="btn-register">👤 {{ user }}</a>
+            <a href="/logout" class="btn-logout">ออกจากระบบ</a>
+            {% else %}
+            <a href="/login" class="btn-login">เข้าสู่ระบบ</a>
+            <a href="/register" class="btn-register">สมัครสมาชิก</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="breadcrumb">
+            <a href="/shop">สินค้าทั้งหมด</a> › <span>{{ category.name }}</span>
+        </div>
+
+        <div class="section-header">
+            <div>
+                <p class="section-title">{{ category.name }}</p>
+                <p class="section-sub">{{ category.description }}</p>
+            </div>
+        </div>
+
+        <div class="product-grid">
+            {% for product in products %}
+            <div class="product-card {% if product.stock == 0 %}out-of-stock{% endif %}">
+                <div class="product-badge-wrap">
+                    {% if product.recommended %}
+                    <span class="product-badge-rec">⭐ แนะนำ</span>
+                    {% endif %}
+                    {% if product.stock == 0 %}
+                    <span class="product-badge-out">หมด</span>
+                    {% endif %}
+                </div>
+                <div class="product-icon">
+                    <img src="/static/roblox.png" alt="Roblox" style="width:56px;height:56px;object-fit:contain;">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-desc">{{ product.description }}</p>
+                    <div class="product-footer">
+                        <div>
+                            <p class="product-price">฿{{ product.price }}</p>
+                            <p class="product-stock {% if product.stock <= 5 and product.stock > 0 %}stock-low{% endif %}">
+                                {% if product.stock == 0 %}🔴 สินค้าหมด
+                                {% elif product.stock <= 5 %}🟡 คงเหลือ: {{ product.stock }}
+                                {% else %}🟢 คงเหลือ: {{ product.stock }}{% endif %}
+                            </p>
+                        </div>
+                        {% if product.stock > 0 %}
+                        <a href="/buy/{{ product.id }}" class="btn-buy">🛒 ซื้อเลย</a>
+                        {% else %}
+                        <button class="btn-buy btn-disabled" disabled>หมด</button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="#">ติดต่อเรา</a> · <a href="#">LINE: @fatcatstore</a>
+    </div>
+</body>
+</html>

@@ -38,15 +38,28 @@ def get_online_count():
     return sum(1 for t in online_users.values() if now - t < ONLINE_TIMEOUT)
 
 def get_display(username):
-    """คืนชื่อที่จะแสดงใน navbar — ถ้า Google user ใช้ display_name ถ้าปกติใช้ username"""
     if username in users:
         return users[username].get("display_name", username)
     return username
 
+# ===== หมวดหมู่สินค้า =====
+categories = [
+    {
+        "id": "robux",
+        "name": "เติม Robux ID-Pass",
+        "description": "เติม Robux เข้าเกม Roblox ผ่าน ID และ Password",
+        "image": "/static/roblox.png",
+    }
+]
+
+# ===== สินค้า =====
 products = [
-    {"id": 1, "name": "Robux 400", "description": "Roblox 400 Robux เข้าเกมทันที", "price": 99, "stock": 10, "icon": "💎", "recommended": True},
-    {"id": 2, "name": "Robux 800", "description": "Roblox 800 Robux ราคาคุ้มค่า", "price": 189, "stock": 5, "icon": "💎", "recommended": True},
-    {"id": 3, "name": "Robux 1700", "description": "Roblox 1700 Robux แพ็กใหญ่ประหยัด", "price": 379, "stock": 0, "icon": "💎", "recommended": False},
+    {"id": 1, "category": "robux", "name": "500 Robux", "description": "เติม 500 Robux แท้ ID-Pass", "price": 170, "stock": 10, "recommended": True},
+    {"id": 2, "category": "robux", "name": "1000 Robux", "description": "เติม 1000 Robux แท้ ID-Pass", "price": 319, "stock": 10, "recommended": True},
+    {"id": 3, "category": "robux", "name": "2000 Robux", "description": "เติม 2000 Robux แท้ ID-Pass", "price": 599, "stock": 10, "recommended": False},
+    {"id": 4, "category": "robux", "name": "4500 Robux", "description": "เติม 4500 Robux แท้ ID-Pass", "price": 1499, "stock": 10, "recommended": False},
+    {"id": 5, "category": "robux", "name": "10000 Robux", "description": "เติม 10000 Robux แท้ ID-Pass", "price": 2800, "stock": 10, "recommended": False},
+    {"id": 6, "category": "robux", "name": "22500 Robux", "description": "เติม 22500 Robux แท้ ID-Pass", "price": 5500, "stock": 10, "recommended": False},
 ]
 
 def get_user():
@@ -65,10 +78,11 @@ def get_product(product_id):
 def home():
     user = get_user()
     username = session.get("user")
+    featured = [p for p in products if p["recommended"]]
     return render_template("index.html",
         user=get_display(username) if username else None,
         credit=user["credit"] if user else 0,
-        products=products,
+        products=featured,
         total_users=len(users),
         online_count=get_online_count(),
         total_topup=user["total_topup"] if user else 0)
@@ -204,7 +218,21 @@ def shop():
     return render_template("shop.html",
         user=get_display(username) if username else None,
         credit=user["credit"] if user else 0,
-        products=products)
+        categories=categories)
+
+@app.route("/shop/<category_id>")
+def shop_category(category_id):
+    user = get_user()
+    username = session.get("user")
+    category = next((c for c in categories if c["id"] == category_id), None)
+    if not category:
+        return redirect("/shop")
+    cat_products = [p for p in products if p["category"] == category_id]
+    return render_template("shop_category.html",
+        user=get_display(username) if username else None,
+        credit=user["credit"] if user else 0,
+        category=category,
+        products=cat_products)
 
 @app.route("/buy/<int:product_id>", methods=["GET", "POST"])
 def buy(product_id):
