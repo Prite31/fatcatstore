@@ -1,5 +1,3 @@
-from urllib import response
-
 from flask import Flask, render_template, request, redirect, session, jsonify, url_for
 import requests as req
 import time
@@ -8,12 +6,11 @@ from authlib.integrations.flask_client import OAuth
 
 app = Flask(__name__)
 app.secret_key = "fatcatstore2026"
-app.permanent_session_lifetime = 7200  # 7200 วินาที = 2 ชั่วโมง
+app.permanent_session_lifetime = 7200
 
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
-# ===== Google OAuth =====
 oauth = OAuth(app)
 google = oauth.register(
     name="google",
@@ -30,7 +27,6 @@ users = {
 
 pending_slips = []
 purchase_history = []
-
 online_users = {}
 ONLINE_TIMEOUT = 300
 
@@ -46,7 +42,6 @@ def get_display(username):
         return users[username].get("display_name", username)
     return username
 
-# ===== หมวดหมู่สินค้า =====
 categories = [
     {
         "id": "robux",
@@ -56,7 +51,6 @@ categories = [
     }
 ]
 
-# ===== สินค้า =====
 products = [
     {"id": 1, "category": "robux", "name": "500 Robux", "description": "เติม 500 Robux แท้ ID-Pass", "price": 170, "stock": 10, "recommended": True},
     {"id": 2, "category": "robux", "name": "1000 Robux", "description": "เติม 1000 Robux แท้ ID-Pass", "price": 319, "stock": 10, "recommended": True},
@@ -209,15 +203,11 @@ def topup_truemoney():
             return render_template("truemoney.html",
                 credit=user["credit"],
                 error="❌ ลิงก์ไม่ถูกต้อง กรุณาใช้ลิงก์จาก TrueMoney Wallet เท่านั้น")
-
-        # ดึง voucher code จากลิงก์
         try:
             voucher = link.split("?v=")[-1].strip()
             phone = os.environ.get("TRUEMONEY_PHONE", "")
-
-            # เรียก TrueMoney API
             api_url = f"https://gift.truemoney.com/campaign/vouchers/{voucher}/redeem"
-            response = req.post(api_url, json={
+            api_response = req.post(api_url, json={
                 "mobile": phone,
                 "voucher_hash": voucher
             }, headers={
@@ -225,8 +215,8 @@ def topup_truemoney():
                 "User-Agent": "Mozilla/5.0"
             }, timeout=10)
 
-            print("TRUEMONEY RAW:", response.status_code, response.text[:500])
-            data = response.json()
+            print("TRUEMONEY RAW:", api_response.status_code, api_response.text[:500])
+            data = api_response.json()
             status = data.get("status", {})
             code = status.get("code", "")
             print("TRUEMONEY RESPONSE:", data)
@@ -255,15 +245,14 @@ def topup_truemoney():
             else:
                 error = f"❌ ไม่สำเร็จ: {code}"
 
-            return render_template("truemoney.html",
-                credit=user["credit"], error=error)
+            return render_template("truemoney.html", credit=user["credit"], error=error)
 
         except Exception as e:
             print("TRUEMONEY ERROR:", str(e))
             return render_template("truemoney.html",
                 credit=user["credit"],
                 error=f"❌ เกิดข้อผิดพลาด: {str(e)}")
-        
+
     return render_template("truemoney.html", credit=user["credit"])
 
 @app.route("/credit")
@@ -328,13 +317,13 @@ def buy(product_id):
         users[session["user"]]["credit"] -= product["price"]
         product["stock"] -= 1
         purchase_history.append({
-    "user": session["user"],
-    "product": product["name"],
-    "price": product["price"],
-    "product_id": product_id,
-    "roblox_id": request.form.get("roblox_id", ""),
-    "roblox_password": request.form.get("roblox_password", "")
-})
+            "user": session["user"],
+            "product": product["name"],
+            "price": product["price"],
+            "product_id": product_id,
+            "roblox_id": request.form.get("roblox_id", ""),
+            "roblox_password": request.form.get("roblox_password", "")
+        })
         return render_template("buy.html", product=product, credit=users[session["user"]]["credit"], success=True)
     return render_template("buy.html", product=product, credit=user["credit"])
 
