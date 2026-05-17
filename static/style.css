@@ -1117,3 +1117,11 @@ body {
     height: 1px;
     background: var(--border);
 }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px #0d0f1a inset !important;
+    -webkit-text-fill-color: white !important;
+    border-color: var(--border) !important;
+}
