@@ -1,48 +1,34 @@
 from flask import Flask, render_template, request, redirect, session, jsonify
-import os
 import requests as req
+import time
 
 app = Flask(__name__)
 app.secret_key = "fatcatstore2026"
 
 users = {
-    "admin": {"password": "1234", "credit": 0, "role": "admin"}
+    "admin": {"password": "1234", "credit": 0, "role": "admin", "total_topup": 0}
 }
 
 pending_slips = []
+purchase_history = []
+
+# ===== ระบบ Online Tracking =====
+online_users = {}
+ONLINE_TIMEOUT = 300  # ถ้าไม่ขยับ 5 นาที = offline
+
+def update_online(username):
+    online_users[username] = time.time()
+
+def get_online_count():
+    now = time.time()
+    return sum(1 for t in online_users.values() if now - t < ONLINE_TIMEOUT)
 
 # ===== ระบบสินค้า =====
 products = [
-    {
-        "id": 1,
-        "name": "Robux 400",
-        "description": "Roblox 400 Robux เข้าเกมทันที",
-        "price": 99,
-        "stock": 10,
-        "icon": "💎",
-        "recommended": True
-    },
-    {
-        "id": 2,
-        "name": "Robux 800",
-        "description": "Roblox 800 Robux ราคาคุ้มค่า",
-        "price": 189,
-        "stock": 5,
-        "icon": "💎",
-        "recommended": True
-    },
-    {
-        "id": 3,
-        "name": "Robux 1700",
-        "description": "Roblox 1700 Robux แพ็กใหญ่ประหยัด",
-        "price": 379,
-        "stock": 0,
-        "icon": "💎",
-        "recommended": False
-    },
+    {"id": 1, "name": "Robux 400", "description": "Roblox 400 Robux เข้าเกมทันที", "price": 99, "stock": 10, "icon": "💎", "recommended": True},
+    {"id": 2, "name": "Robux 800", "description": "Roblox 800 Robux ราคาคุ้มค่า", "price": 189, "stock": 5, "icon": "💎", "recommended": True},
+    {"id": 3, "name": "Robux 1700", "description": "Roblox 1700 Robux แพ็กใหญ่ประหยัด", "price": 379, "stock": 0, "icon": "💎", "recommended": False},
 ]
-
-purchase_history = []
 
 def get_user():
     if "user" not in session:
@@ -50,6 +36,7 @@ def get_user():
     if session["user"] not in users:
         session.pop("user", None)
         return None
+    update_online(session["user"])
     return users[session["user"]]
 
 def get_product(product_id):
@@ -61,7 +48,10 @@ def home():
     return render_template("index.html",
         user=session.get("user"),
         credit=user["credit"] if user else 0,
-        products=products)
+        products=products,
+        total_users=len(users),
+        online_count=get_online_count(),
+        total_topup=user["total_topup"] if user else 0)
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -69,17 +59,13 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         recaptcha = request.form.get("g-recaptcha-response", "")
-
         verify = req.post("https://www.google.com/recaptcha/api/siteverify", data={
             "secret": "6Le5B-4sAAAAKMO6d5Lhi0U3QQf7Z0cL4g7JgoD",
             "response": recaptcha
         }).json()
-
-        # if not verify.get("success"):
-        #     return render_template("login.html", error="กรุณายืนยันว่าไม่ใช่บอทก่อน")
-
         if username in users and users[username]["password"] == password:
             session["user"] = username
+            update_online(username)
             return redirect("/login-success")
         return render_template("login.html", error="ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
     return render_template("login.html")
@@ -100,13 +86,16 @@ def register():
         password = request.form["password"]
         if username in users:
             return render_template("register.html", error="ชื่อผู้ใช้นี้มีอยู่แล้ว")
-        users[username] = {"password": password, "credit": 0, "role": "user"}
+        users[username] = {"password": password, "credit": 0, "role": "user", "total_topup": 0}
         session["user"] = username
+        update_online(username)
         return redirect("/login-success")
     return render_template("register.html")
 
 @app.route("/logout")
 def logout():
+    if "user" in session and session["user"] in online_users:
+        del online_users[session["user"]]
     session.pop("user", None)
     return redirect("/")
 
@@ -124,8 +113,7 @@ def topup():
     user = get_user()
     if not user:
         return redirect("/login")
-    return render_template("topup.html",
-        credit=user["credit"])
+    return render_template("topup.html", credit=user["credit"])
 
 @app.route("/payment", methods=["GET", "POST"])
 def payment():
@@ -144,8 +132,7 @@ def payment():
             return render_template("payment.html",
                 success=True, amount=amount,
                 credit=user["credit"])
-    return render_template("payment.html",
-        credit=user["credit"])
+    return render_template("payment.html", credit=user["credit"])
 
 @app.route("/credit")
 def credit():
@@ -167,7 +154,6 @@ def history():
         slips=user_slips,
         purchases=user_purchases)
 
-# ===== ระบบสินค้า =====
 @app.route("/shop")
 def shop():
     user = get_user()
@@ -181,58 +167,37 @@ def buy(product_id):
     user = get_user()
     if not user:
         return redirect("/login")
-
     product = get_product(product_id)
     if not product:
         return redirect("/shop")
-
     if request.method == "POST":
         if product["stock"] <= 0:
-            return render_template("buy.html",
-                product=product,
-                credit=user["credit"],
-                error="สินค้าหมดแล้ว")
-
+            return render_template("buy.html", product=product, credit=user["credit"], error="สินค้าหมดแล้ว")
         if user["credit"] < product["price"]:
-            return render_template("buy.html",
-                product=product,
-                credit=user["credit"],
+            return render_template("buy.html", product=product, credit=user["credit"],
                 error=f"เครดิตไม่พอ (ต้องการ ฿{product['price']} มีอยู่ ฿{user['credit']})")
-
-        # หักเครดิต + ลดสต็อก
         users[session["user"]]["credit"] -= product["price"]
         product["stock"] -= 1
-
         purchase_history.append({
             "user": session["user"],
             "product": product["name"],
             "price": product["price"],
             "product_id": product_id
         })
+        return render_template("buy.html", product=product, credit=users[session["user"]]["credit"], success=True)
+    return render_template("buy.html", product=product, credit=user["credit"])
 
-        return render_template("buy.html",
-            product=product,
-            credit=users[session["user"]]["credit"],
-            success=True)
-
-    return render_template("buy.html",
-        product=product,
-        credit=user["credit"])
-
-# ===== Admin: เติมเครดิตให้ user =====
 @app.route("/admin/topup", methods=["POST"])
 def admin_topup():
     user = get_user()
     if not user or user.get("role") != "admin":
         return jsonify({"error": "Unauthorized"}), 403
-
     target = request.json.get("username")
     amount = request.json.get("amount", 0)
-
     if target not in users:
         return jsonify({"error": "ไม่พบผู้ใช้"}), 404
-
     users[target]["credit"] += int(amount)
+    users[target]["total_topup"] += int(amount)
     return jsonify({"success": True, "credit": users[target]["credit"]})
 
 if __name__ == "__main__":

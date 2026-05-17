@@ -34,11 +34,20 @@
             <h1>FAT CAT STORE</h1>
             <p>เติมง่าย จ่ายสะดวก ปลอดภัย 100%</p>
             <div class="hero-stats">
-                <div class="stat-item"><span class="stat-num">1,200+</span><span class="stat-label">ลูกค้า</span></div>
+                <div class="stat-item">
+                    <span class="stat-num">{{ total_users }}</span>
+                    <span class="stat-label">ลูกค้า</span>
+                </div>
                 <div class="stat-divider"></div>
-                <div class="stat-item"><span class="stat-num">5 นาที</span><span class="stat-label">เติมเงิน</span></div>
+                <div class="stat-item">
+                    <span class="stat-num">฿{{ total_topup }}</span>
+                    <span class="stat-label">ยอดสะสม</span>
+                </div>
                 <div class="stat-divider"></div>
-                <div class="stat-item"><span class="stat-num">24/7</span><span class="stat-label">บริการ</span></div>
+                <div class="stat-item">
+                    <span class="stat-num">🟢 {{ online_count }}</span>
+                    <span class="stat-label">ออนไลน์</span>
+                </div>
             </div>
         </div>
         <div class="hero-cat">🐱</div>
@@ -111,13 +120,9 @@
                         <div>
                             <p class="product-price">฿{{ product.price }}</p>
                             <p class="product-stock {% if product.stock <= 5 and product.stock > 0 %}stock-low{% endif %}">
-                                {% if product.stock == 0 %}
-                                🔴 สินค้าหมด
-                                {% elif product.stock <= 5 %}
-                                🟡 คงเหลือ: {{ product.stock }}
-                                {% else %}
-                                🟢 คงเหลือ: {{ product.stock }}
-                                {% endif %}
+                                {% if product.stock == 0 %}🔴 สินค้าหมด
+                                {% elif product.stock <= 5 %}🟡 คงเหลือ: {{ product.stock }}
+                                {% else %}🟢 คงเหลือ: {{ product.stock }}{% endif %}
                             </p>
                         </div>
                         {% if product.stock > 0 %}
@@ -129,9 +134,7 @@
                 </div>
             </div>
             {% else %}
-            <div class="no-products">
-                <p>🐱 ยังไม่มีสินค้าในขณะนี้</p>
-            </div>
+            <div class="no-products"><p>🐱 ยังไม่มีสินค้าในขณะนี้</p></div>
             {% endfor %}
         </div>
     </div>
