@@ -206,24 +206,25 @@ def topup_truemoney():
         try:
             voucher = link.split("?v=")[-1].strip()
             phone = os.environ.get("TRUEMONEY_PHONE", "")
+            print(f"DEBUG: voucher={voucher}, phone={phone}")
             api_url = f"https://gift.truemoney.com/campaign/vouchers/{voucher}/redeem"
+            print(f"DEBUG: calling {api_url}")
             api_response = req.post(api_url, json={
-                 "mobile": phone,
+                "mobile": phone,
                 "voucher_hash": voucher
-            },  headers={
-                 "Content-Type": "application/json",
-                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                 "Accept": "application/json, text/plain, */*",
-                 "Accept-Language": "th-TH,th;q=0.9,en;q=0.8",
-                 "Origin": "https://gift.truemoney.com",
-                 "Referer": f"https://gift.truemoney.com/campaign/?v={voucher}"
-            }, timeout=10)
-
-            print("TRUEMONEY RAW:", api_response.status_code, api_response.text[:500])
+            }, headers={
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "th-TH,th;q=0.9,en;q=0.8",
+                "Origin": "https://gift.truemoney.com",
+                "Referer": f"https://gift.truemoney.com/campaign/?v={voucher}"
+            }, timeout=15)
+            print(f"TRUEMONEY RAW: {api_response.status_code} {api_response.text[:500]}")
             data = api_response.json()
             status = data.get("status", {})
             code = status.get("code", "")
-            print("TRUEMONEY RESPONSE:", data)
+            print(f"TRUEMONEY CODE: {code}")
 
             if code == "SUCCESS":
                 amount = int(data["data"]["voucher"]["redeemed_amount_baht"])
@@ -248,11 +249,11 @@ def topup_truemoney():
                 error = "❌ อั่งเปาหมดอายุแล้ว"
             else:
                 error = f"❌ ไม่สำเร็จ: {code}"
-
             return render_template("truemoney.html", credit=user["credit"], error=error)
 
         except Exception as e:
-            print("TRUEMONEY ERROR:", str(e))
+            import traceback
+            print(f"TRUEMONEY EXCEPTION: {traceback.format_exc()}")
             return render_template("truemoney.html",
                 credit=user["credit"],
                 error=f"❌ เกิดข้อผิดพลาด: {str(e)}")
